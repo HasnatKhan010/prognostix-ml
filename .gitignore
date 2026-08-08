@@ -1,0 +1,4 @@
+
+# Custom configuration ignores
+
+artifacts/models/*
