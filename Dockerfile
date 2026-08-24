@@ -1,13 +1,10 @@
-# Hugging Face Spaces image - one container serving the dashboard and the API.
+# Multi-platform Docker image - serves the dashboard and the API in one container.
 #
-# Spaces requirements this satisfies: a root-level Dockerfile, a non-root user
-# with UID 1000, and the app listening on port 7860 (declared as `app_port` in
-# the README front matter).
-#
-# Build and run locally exactly as the Space does:
-#   docker build -t prognostix-space .
-#   docker run --rm -p 7860:7860 prognostix-space
-#   open http://localhost:7860
+# Supported deployment targets:
+#   Render.com  : PORT is set automatically by Render (defaults to 8000 here)
+#   Hugging Face: set PORT=7860 in Space env vars; app_port: 7860 in README front matter
+#   Local dev   : docker run --rm -p 8000:8000 prognostix-ml
+#                 open http://localhost:8000
 #
 # For the local development stack (separate API + nginx containers, port 8000/8080)
 # use docker/docker-compose.yml instead.
@@ -50,7 +47,10 @@ COPY --chown=user data/ ./data/
 COPY --chown=user artifacts/ ./artifacts/
 
 ENV PYTHONPATH=/home/user/app \
-    PROGNOSTIX_CONFIG=/home/user/app/configs/config.yaml
+    PROGNOSTIX_CONFIG=/home/user/app/configs/config.yaml \
+    # Default port - Render.com overrides this automatically via its own PORT env var;
+    # for Hugging Face Spaces set PORT=7860 in the Space environment variables.
+    PORT=8000
 
 # Trained models are not tracked in git (artifacts/models/ is ignored), so the
 # image builds its own from the committed raw CMAPSS data. prepare_data.py also
@@ -66,11 +66,13 @@ RUN if ls artifacts/models/*.pt >/dev/null 2>&1; then \
         python scripts/train.py --model gru --no-plots; \
     fi
 
-EXPOSE 7860
+EXPOSE 8000
 
 # /health answers 200 even with no model loaded (reporting "degraded"), which is
 # the right liveness signal: the process is up and can describe its own problem.
+# Shell form used so $PORT is expanded at container start time.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=45s --retries=3 \
-    CMD curl -fsS http://localhost:7860/health || exit 1
+    CMD curl -fsS http://localhost:${PORT:-8000}/health || exit 1
 
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "7860"]
+# Shell form (not exec form) so the $PORT variable is substituted at runtime.
+CMD uvicorn api.main:app --host 0.0.0.0 --port ${PORT:-8000}
