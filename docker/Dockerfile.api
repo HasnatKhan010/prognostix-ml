@@ -1,0 +1,48 @@
+# Inference API image.
+#
+# Build from the repository root so the whole project is in context:
+#   docker build -f docker/Dockerfile.api -t prognostix-api .
+#
+# Torch is installed from the CPU wheel index: the default wheels pull in ~2 GB of
+# CUDA libraries that a serving container has no use for.
+
+FROM python:3.12-slim AS base
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+WORKDIR /app
+
+# libgomp1 is required by scikit-learn and torch; curl backs the health check.
+RUN apt-get update \
+ && apt-get install --no-install-recommends -y libgomp1 curl \
+ && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt ./
+RUN pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
+
+# Source last, so dependency layers stay cached across code changes.
+COPY configs/ ./configs/
+COPY src/ ./src/
+COPY api/ ./api/
+COPY monitoring/ ./monitoring/
+COPY scripts/ ./scripts/
+
+# Artifacts and data are mounted at runtime (see docker-compose.yml); the
+# directories exist so the app starts cleanly even when nothing is mounted.
+RUN mkdir -p artifacts/models artifacts/figures artifacts/reports data/processed data/raw/CMAPSS \
+ && useradd --create-home --uid 10001 prognostix \
+ && chown -R prognostix:prognostix /app
+
+USER prognostix
+
+EXPOSE 8000
+
+# /health reports "degraded" without a model but still answers 200, which is the
+# right liveness signal: the process is up and can report its own problem.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+    CMD curl -fsS http://localhost:8000/health || exit 1
+
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,0 +1,138 @@
+# Prognostix ML - central configuration
+# Every path is relative to the project root and resolved by src.config.load_config().
+
+project:
+  name: prognostix-ml
+  version: 0.1.0
+  seed: 42
+
+paths:
+  data_raw: data/raw/CMAPSS
+  data_processed: data/processed
+  artifacts: artifacts
+  models: artifacts/models
+  figures: artifacts/figures
+  reports: artifacts/reports
+
+data:
+  # CMAPSS sub-dataset to work with (FD001 .. FD004).
+  dataset: FD001
+  id_column: engine_id
+  time_column: cycle
+  target_column: RUL
+  setting_columns:
+    - setting_1
+    - setting_2
+    - setting_3
+  n_sensors: 21
+  # Sensors with zero variance carry no information and are dropped.
+  drop_constant_sensors: true
+  # Extra sensors to force-drop regardless of variance.
+  drop_sensors: []
+  # Clip RUL at this value. The literature commonly caps at 125 cycles because
+  # degradation is not observable early in life. null keeps the raw linear RUL,
+  # which is what the committed artifacts/ models were trained on.
+  rul_cap: null
+  window_size: 30
+  split:
+    # 70% train, 15% validation, 15% test - split by engine, never by row,
+    # so no engine leaks across splits.
+    test_size: 0.30
+    val_ratio: 0.50
+    random_state: 42
+
+preprocessing:
+  scaler: standard          # standard | minmax
+  scaler_filename: scaler.joblib
+
+features:
+  # Aggregations used to flatten a (window, n_sensors) sequence for tabular models.
+  statistical:
+    - mean
+    - std
+    - min
+    - max
+    - last
+    - trend
+  rolling_windows: [5, 10, 20]
+  rolling_stats: [mean, std]
+  lags: [1, 2, 5]
+  include_diff: true
+
+training:
+  batch_size: 128
+  epochs: 30
+  learning_rate: 0.001
+  weight_decay: 0.0
+  early_stopping_patience: 8
+  min_delta: 0.0
+  grad_clip: 1.0
+  lr_scheduler: plateau     # plateau | none
+  lr_patience: 3
+  lr_factor: 0.5
+  device: auto              # auto | cpu | cuda
+  num_workers: 0
+
+models:
+  linear: {}
+  random_forest:
+    n_estimators: 200
+    max_depth: null
+    min_samples_leaf: 1
+    n_jobs: -1
+    random_state: 42
+  lstm:
+    hidden_size: 128
+    num_layers: 2
+    dropout: 0.2
+    bidirectional: false
+  gru:
+    hidden_size: 128
+    num_layers: 2
+    dropout: 0.2
+    bidirectional: false
+  attention:
+    hidden_size: 128
+    num_layers: 2
+    dropout: 0.2
+    num_heads: 4
+
+inference:
+  default_model: gru
+  # RUL thresholds (cycles) that map a prediction onto a health band.
+  health:
+    max_rul: 125
+    critical_rul: 20
+    warning_rul: 50
+    watch_rul: 80
+
+api:
+  title: Prognostix ML API
+  description: Remaining Useful Life prediction for industrial equipment.
+  host: 0.0.0.0
+  port: 8000
+  prefix: /api/v1
+  cors_origins: ["*"]
+  # Models eagerly loaded at startup. Others load lazily on first request.
+  preload_models: [gru]
+
+monitoring:
+  drift:
+    bins: 10
+    psi_warning: 0.1
+    psi_critical: 0.25
+    ks_alpha: 0.05
+    # Share of features that must drift before the dataset is flagged.
+    feature_share_warning: 0.2
+    feature_share_critical: 0.4
+  performance:
+    # Reference RMSE/MAE. null means "read the best row from the leaderboard".
+    baseline_rmse: null
+    baseline_mae: null
+    degradation_warning_pct: 10.0
+    degradation_critical_pct: 25.0
+    min_samples: 50
+  alerts:
+    log_filename: alerts.jsonl
+    webhook_url: null
+    console: true

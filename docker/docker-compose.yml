@@ -1,0 +1,51 @@
+# Full stack: inference API + operations dashboard.
+#
+#   cd docker && docker compose up --build
+#
+# Dashboard: http://localhost:8080
+# API docs:  http://localhost:8000/docs
+#
+# Trained models and prepared data are bind-mounted rather than baked into the
+# image: they are large, they change on every retrain, and the API is the same
+# artifact either way. Prepare and train on the host first:
+#
+#   python scripts/prepare_data.py
+#   python scripts/train.py --model gru
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    image: prognostix-api:latest
+    container_name: prognostix-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../artifacts:/app/artifacts
+      - ../data/processed:/app/data/processed:ro
+      - ../data/raw:/app/data/raw:ro
+      - ../configs:/app/configs:ro
+    environment:
+      PROGNOSTIX_CONFIG: /app/configs/config.yaml
+      PYTHONPATH: /app
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 40s
+      retries: 3
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
+    image: prognostix-frontend:latest
+    container_name: prognostix-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      api:
+        condition: service_started
+    restart: unless-stopped

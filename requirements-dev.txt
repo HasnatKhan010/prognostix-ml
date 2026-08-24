@@ -1,0 +1,19 @@
+# Development, test and notebook tooling.
+#
+#   pip install -r requirements.txt -r requirements-dev.txt
+
+-r requirements.txt
+
+# --- tests ---
+pytest==9.1.1
+httpx==0.28.1          # required by fastapi.testclient
+pytest-cov>=5.0        # not pinned: coverage plugin, no API surface we depend on
+
+# --- linting ---
+ruff>=0.6              # not pinned: rules are selected explicitly in pyproject.toml
+
+# --- notebooks ---
+jupyter==1.1.1
+jupyterlab==4.6.2
+ipykernel==7.3.0
+ipywidgets==8.1.8

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prognostix ML — Fleet Operations</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-palette="#2a78d6,#0ca30c,#fab219,#ec835a,#d03b3b">
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <div>
+      <h1>Prognostix ML</h1>
+      <p class="brand-sub">Remaining useful life &middot; turbofan fleet</p>
+    </div>
+  </div>
+
+  <div class="topbar-actions">
+    <label class="field field-inline">
+      <span class="field-label">API</span>
+      <input id="api-base" type="text" spellcheck="false" placeholder="http://localhost:8000">
+    </label>
+    <button id="theme-toggle" class="btn btn-ghost" type="button" aria-label="Switch colour theme">
+      <span id="theme-icon" aria-hidden="true">◐</span><span id="theme-label">Auto</span>
+    </button>
+  </div>
+</header>
+
+<!-- One filter row, above everything it scopes. -->
+<div class="filterbar" role="group" aria-label="Fleet filters">
+  <label class="field">
+    <span class="field-label">Model</span>
+    <select id="model-select"></select>
+  </label>
+
+  <label class="field">
+    <span class="field-label">Risk band</span>
+    <select id="risk-select">
+      <option value="all">All machines</option>
+      <option value="action">Needs action</option>
+      <option value="critical">Critical</option>
+      <option value="warning">Warning</option>
+      <option value="watch">Watch</option>
+      <option value="healthy">Healthy</option>
+    </select>
+  </label>
+
+  <label class="field">
+    <span class="field-label">Show</span>
+    <select id="limit-select">
+      <option value="12">12 most urgent</option>
+      <option value="20" selected>20 most urgent</option>
+      <option value="40">40 most urgent</option>
+    </select>
+  </label>
+
+  <button id="refresh" class="btn" type="button">Refresh</button>
+  <span id="status-line" class="status-line" role="status" aria-live="polite"></span>
+</div>
+
+<main id="main" hidden>
+
+  <!-- Exactly one hero figure per view. -->
+  <section class="panel hero-panel">
+    <div class="hero">
+      <p class="hero-label">Fleet health index</p>
+      <p class="hero-value"><span id="hero-value">—</span><span class="hero-unit">/100</span></p>
+      <p id="hero-note" class="hero-note"></p>
+    </div>
+
+    <div class="tiles" id="tiles"></div>
+  </section>
+
+  <section class="grid">
+
+    <!-- Bars: magnitude per machine, coloured by risk state. -->
+    <article class="panel chart-panel">
+      <div class="panel-head">
+        <div>
+          <h2>Remaining useful life by machine</h2>
+          <p class="panel-sub" id="bars-sub">Most urgent first &middot; cycles remaining</p>
+        </div>
+        <div class="toggle" role="tablist" aria-label="Chart or table view">
+          <button class="toggle-btn is-on" data-view="chart" role="tab" aria-selected="true" type="button">Chart</button>
+          <button class="toggle-btn" data-view="table" role="tab" aria-selected="false" type="button">Table</button>
+        </div>
+      </div>
+
+      <ul class="legend" id="risk-legend"></ul>
+
+      <div id="bars-view">
+        <svg id="bars" role="img" aria-labelledby="bars-title"></svg>
+        <title id="bars-title">Predicted remaining useful life per machine, in cycles</title>
+      </div>
+
+      <div id="bars-table" class="table-wrap" hidden></div>
+      <p class="hint">Select a machine to inspect its sensor history.</p>
+    </article>
+
+    <!-- Detail: meter + single-series sparkline. -->
+    <article class="panel detail-panel">
+      <div class="panel-head">
+        <div>
+          <h2 id="detail-title">Machine detail</h2>
+          <p class="panel-sub" id="detail-sub">Choose a machine from the chart</p>
+        </div>
+        <span id="detail-badge" class="badge" hidden></span>
+      </div>
+
+      <div id="detail-body" class="detail-body" hidden>
+        <div class="meter-block">
+          <div class="meter-head">
+            <span class="meter-label">Health score</span>
+            <span class="meter-value" id="meter-value">—</span>
+          </div>
+          <svg id="meter" class="meter" role="img" aria-labelledby="meter-title"></svg>
+          <title id="meter-title">Health score meter with maintenance thresholds</title>
+          <p class="meter-scale"><span>0</span><span>critical</span><span>warning</span><span>watch</span><span>100</span></p>
+        </div>
+
+        <dl class="facts" id="detail-facts"></dl>
+
+        <p class="action" id="detail-action"></p>
+
+        <div class="spark-block">
+          <div class="panel-head panel-head-tight">
+            <div>
+              <h3 id="spark-title">Sensor trend</h3>
+              <p class="panel-sub">Raw reading over the last recorded cycles</p>
+            </div>
+            <label class="field field-inline">
+              <span class="field-label">Sensor</span>
+              <select id="sensor-select"></select>
+            </label>
+          </div>
+
+          <div class="spark-wrap">
+            <svg id="spark" role="img" aria-labelledby="spark-desc"></svg>
+            <title id="spark-desc">Sensor value over cycles for the selected machine</title>
+            <div id="spark-tip" class="tooltip" hidden></div>
+          </div>
+
+          <details class="table-details">
+            <summary>Table view</summary>
+            <div id="spark-table" class="table-wrap"></div>
+          </details>
+        </div>
+      </div>
+
+      <p id="detail-empty" class="empty-note">No machine selected.</p>
+    </article>
+  </section>
+</main>
+
+<section id="splash" class="panel splash">
+  <h2 id="splash-title">Connecting to the API…</h2>
+  <p id="splash-body" class="splash-body">Reading <code>/api/v1/health</code>.</p>
+  <pre id="splash-hint" class="splash-hint" hidden></pre>
+  <button id="splash-retry" class="btn" type="button" hidden>Try again</button>
+</section>
+
+<div id="bar-tip" class="tooltip" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>
