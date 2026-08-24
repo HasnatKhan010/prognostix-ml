@@ -1,0 +1,41 @@
+# Keeps the build context small and the image reproducible.
+# Without this, `docker build .` uploads .venv/ and every notebook output.
+
+# --- environments and caches ---
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# --- version control and CI ---
+.git/
+.gitignore
+.github/
+
+# --- not needed at runtime ---
+notebooks/
+tests/
+docs/
+docker/
+*.md
+!README.md
+.env
+.env.example
+
+# --- regenerated during the build by scripts/prepare_data.py ---
+data/processed/
+
+# --- large local artifacts ---
+# The 180 MB random forest is not worth shipping; the GRU checkpoint (if present)
+# is, since copying it lets the build skip training.
+artifacts/models/random_forest_baseline.joblib
+artifacts/figures/
+artifacts/reports/
+data/raw/CMAPSS/*.pdf
