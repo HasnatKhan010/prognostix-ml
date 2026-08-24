@@ -1,4 +1,4 @@
-# Runtime dependencies, pinned to the versions this project was developed against.
+# Runtime dependencies — compatible with Python 3.11 and 3.12.
 #
 # Torch ships CUDA wheels by default (~2 GB). For a CPU-only install:
 #   pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
@@ -6,27 +6,27 @@
 # Development and notebook tooling lives in requirements-dev.txt.
 
 # --- numerical core ---
-numpy==2.5.1
-pandas==3.0.5
-scipy==1.18.0
-scikit-learn==1.9.0
-joblib==1.5.3
+numpy==2.2.4
+pandas==2.2.3
+scipy==1.15.3
+scikit-learn==1.6.1
+joblib==1.4.2
 
 # --- deep learning ---
-torch==2.13.0
+torch==2.5.1
 
 # --- configuration ---
-PyYAML==6.0.3
+PyYAML==6.0.2
 
 # --- visualisation (evaluation figures) ---
-matplotlib==3.11.1
+matplotlib==3.10.1
 seaborn==0.13.2
 
 # --- API serving ---
-fastapi==0.141.1
-uvicorn==0.52.1
-pydantic==2.13.4
+fastapi==0.115.12
+uvicorn==0.34.3
+pydantic==2.11.3
 
 # --- monitoring and utilities ---
-prometheus-client==0.26.0
-requests==2.34.2
+prometheus-client==0.21.1
+requests==2.32.3

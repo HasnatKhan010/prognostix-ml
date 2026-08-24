@@ -137,7 +137,7 @@ class PredictRequest(BaseModel):
         return value
 
     @model_validator(mode="after")
-    def _exactly_one_input(self) -> "PredictRequest":
+    def _exactly_one_input(self) -> PredictRequest:
         if (self.window is None) == (self.readings is None):
             raise ValueError("provide exactly one of 'window' or 'readings'")
         return self

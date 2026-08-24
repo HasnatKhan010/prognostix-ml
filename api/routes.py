@@ -113,7 +113,7 @@ def health(request: Request) -> HealthResponse:
     """
     registry = get_registry(request)
     available = registry.available()
-    loaded = sorted(registry._predictors)  # noqa: SLF001 - introspection for reporting
+    loaded = sorted(registry._predictors)
 
     scaler_available = (
         get_config().path("artifacts") / get_config().preprocessing.scaler_filename
@@ -300,7 +300,7 @@ def predict_batch(payload: BatchPredictRequest, request: Request) -> BatchPredic
                         scaled=payload.items[index].scaled,
                         engine_id=payload.items[index].engine_id,
                     )
-                    for window, index in zip(windows, indices)
+                    for window, index in zip(windows, indices, strict=False)
                 ]
         except ValueError as exc:
             _count_error("invalid_input")
@@ -318,7 +318,7 @@ def predict_batch(payload: BatchPredictRequest, request: Request) -> BatchPredic
                 time.perf_counter() - started
             )
 
-        for index, assessment in zip(indices, assessments):
+        for index, assessment in zip(indices, assessments, strict=False):
             if METRICS_ENABLED:
                 PREDICTIONS.labels(
                     model=predictor.model_name, risk_level=assessment.risk_level.value

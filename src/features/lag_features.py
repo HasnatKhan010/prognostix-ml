@@ -8,7 +8,7 @@ the model directly; differences expose the slope between them.
 from __future__ import annotations
 
 import logging
-from typing import Sequence
+from collections.abc import Sequence
 
 import pandas as pd
 

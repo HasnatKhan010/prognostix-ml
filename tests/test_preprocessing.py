@@ -34,7 +34,6 @@ from src.preprocessing.sequences import (
 )
 from tests.conftest import CONSTANT_SENSORS, WINDOW
 
-
 # --- RUL target -----------------------------------------------------------
 
 
@@ -50,7 +49,7 @@ def test_add_rul_counts_down_to_zero(raw_frame):
 
 def test_add_rul_offsets_by_ground_truth(raw_frame):
     """A test engine stops before failure, so its final RUL is the truth value."""
-    truth = pd.Series({engine: 10.0 for engine in raw_frame["engine_id"].unique()})
+    truth = pd.Series(dict.fromkeys(raw_frame["engine_id"].unique(), 10.0))
     labelled = add_rul(raw_frame, final_rul=truth)
 
     last_values = labelled.groupby("engine_id")["RUL"].min()
@@ -130,7 +129,7 @@ def test_split_engines_is_deterministic():
     engines = np.arange(1, 51)
     first = split_engines(engines, random_state=42)
     second = split_engines(engines, random_state=42)
-    assert all(np.array_equal(a, b) for a, b in zip(first, second))
+    assert all(np.array_equal(a, b) for a, b in zip(first, second, strict=False))
 
 
 def test_split_engines_needs_three_engines():
@@ -196,7 +195,7 @@ def test_scaler_rejects_wrong_feature_count(scaler_bundle):
 
 
 def test_load_scaler_missing_file_is_actionable(config):
-    with pytest.raises(FileNotFoundError, match="prepare_data.py"):
+    with pytest.raises(FileNotFoundError, match=r"prepare_data\.py"):
         load_scaler(config=config)
 
 
@@ -235,7 +234,7 @@ def test_create_sequences_never_crosses_engine_boundaries(labelled_frame, featur
 
 
 def test_create_sequences_returns_engine_ids(labelled_frame, feature_columns):
-    X, y, ids = create_sequences(
+    X, _y, ids = create_sequences(
         labelled_frame, feature_columns, "RUL", WINDOW, return_ids=True
     )
     assert len(ids) == len(X)

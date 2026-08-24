@@ -154,7 +154,7 @@ def track_performance(
 
     degradation: dict[str, float] = {}
     for key in ("RMSE", "MAE"):
-        if key in reference and reference[key]:
+        if reference.get(key):
             degradation[key] = (metrics[key] - reference[key]) / reference[key] * 100.0
 
     note: str | None = None
@@ -181,7 +181,7 @@ def track_performance(
         metrics=metrics,
         baseline=reference,
         degradation_pct=degradation,
-        n_samples=int(len(true)),
+        n_samples=len(true),
         thresholds={
             "degradation_warning_pct": warning_pct,
             "degradation_critical_pct": critical_pct,
@@ -272,8 +272,8 @@ def main(argv: list[str] | None = None) -> int:
     setup_logging()
     config = get_config()
 
-    from src.ingestion.loader import load_sequences
     from src.inference.predictor import RULPredictor
+    from src.ingestion.loader import load_sequences
 
     model_name = args.model or str(config.inference.default_model)
     X, y = load_sequences(args.split, config)

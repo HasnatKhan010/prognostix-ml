@@ -10,9 +10,10 @@ sync with the weights.
 from __future__ import annotations
 
 import logging
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 import joblib
 import numpy as np
@@ -107,7 +108,7 @@ class TabularRULModel:
 
     # -- estimator API ---------------------------------------------------
 
-    def fit(self, X: np.ndarray, y: np.ndarray) -> "TabularRULModel":
+    def fit(self, X: np.ndarray, y: np.ndarray) -> TabularRULModel:
         """Flatten ``X`` and fit the estimator."""
         features = self.transform(X)
         targets = np.asarray(y, dtype=float).ravel()
@@ -145,7 +146,7 @@ class TabularRULModel:
         if len(names) != len(importances):
             names = [f"f{index}" for index in range(len(importances))]
         pairs = sorted(
-            zip(names, (float(value) for value in importances)),
+            zip(names, (float(value) for value in importances), strict=False),
             key=lambda item: item[1],
             reverse=True,
         )
@@ -167,7 +168,7 @@ class TabularRULModel:
         path: str | Path,
         stats: Sequence[str] | None = None,
         feature_columns: list[str] | None = None,
-    ) -> "TabularRULModel":
+    ) -> TabularRULModel:
         """Load a bundle, or adopt a bare estimator saved by the notebooks.
 
         The committed ``*_baseline.joblib`` files hold raw scikit-learn

@@ -11,15 +11,16 @@ ones - so every entry point validates before predicting.
 from __future__ import annotations
 
 import logging
+from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any
 
 import numpy as np
 import pandas as pd
 
 from src.config import Config, get_config, get_device
-from src.ingestion.validator import validate_window
 from src.inference.health_score import HealthAssessment, assess_health
+from src.ingestion.validator import validate_window
 from src.preprocessing.scaling import ScalerBundle, load_scaler
 
 logger = logging.getLogger(__name__)
@@ -126,7 +127,7 @@ class RULPredictor:
             f"`python scripts/train.py --model {self.model_name}`."
         )
 
-    def load(self) -> "RULPredictor":
+    def load(self) -> RULPredictor:
         """Load the scaler, weights and metadata."""
         path = self.resolve_path()
 
@@ -376,7 +377,7 @@ class RULPredictor:
             )
         return [
             assess_health(rul, config=self.config, engine_id=engine_id, model=self.model_name)
-            for rul, engine_id in zip(predictions, ids)
+            for rul, engine_id in zip(predictions, ids, strict=False)
         ]
 
     def predict_frame(

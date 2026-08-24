@@ -10,27 +10,28 @@ from __future__ import annotations
 import logging
 import os
 import random
+from collections.abc import Iterator, Mapping
 from pathlib import Path
-from typing import Any, Iterator, Mapping
+from typing import Any
 
 import numpy as np
 import yaml
 
 __all__ = [
-    "PROJECT_ROOT",
     "DEFAULT_CONFIG_PATH",
+    "PROJECT_ROOT",
     "Config",
-    "load_config",
     "get_config",
-    "set_seed",
     "get_device",
+    "load_config",
+    "set_seed",
     "setup_logging",
 ]
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CONFIG_PATH = PROJECT_ROOT / "configs" / "config.yaml"
 
-_CACHED_CONFIG: "Config | None" = None
+_CACHED_CONFIG: Config | None = None
 
 
 class Config(Mapping):

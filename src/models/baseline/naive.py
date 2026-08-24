@@ -52,7 +52,7 @@ class ConstantBaseline:
         self.quantile = float(quantile)
         self.constant_: float | None = None
 
-    def fit(self, X=None, y=None) -> "ConstantBaseline":
+    def fit(self, X=None, y=None) -> ConstantBaseline:
         """Learn the constant from ``y``. ``X`` is accepted and ignored."""
         if y is None:
             raise ValueError("y is required to fit a constant baseline")

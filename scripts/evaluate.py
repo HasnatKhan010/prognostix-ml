@@ -28,16 +28,16 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from src.config import get_config, setup_logging  # noqa: E402
-from src.evaluation.compare import build_leaderboard, save_leaderboard  # noqa: E402
-from src.evaluation.metrics import evaluate_model  # noqa: E402
-from src.evaluation.plots import (  # noqa: E402
+from src.config import get_config, setup_logging
+from src.evaluation.compare import build_leaderboard, save_leaderboard
+from src.evaluation.metrics import evaluate_model
+from src.evaluation.plots import (
     plot_actual_vs_predicted,
     plot_model_comparison,
     plot_residuals,
 )
-from src.ingestion.loader import load_processed, load_sequences  # noqa: E402
-from src.inference.predictor import ModelRegistry  # noqa: E402
+from src.inference.predictor import ModelRegistry
+from src.ingestion.loader import load_processed, load_sequences
 
 logger = logging.getLogger("prognostix.evaluate")
 
@@ -100,7 +100,7 @@ def main(argv: list[str] | None = None) -> int:
             # Windows from data/processed are already scaled; the official test
             # frame is raw and must go through the model's scaler.
             y_pred = predictor.predict(X, scaled=not args.official)
-        except Exception as exc:  # noqa: BLE001 - report and continue
+        except Exception as exc:
             logger.error("Skipping %s: %s", name, exc)
             continue
 
@@ -145,7 +145,7 @@ def _load_evaluation_data(args: argparse.Namespace, config):
     if not args.official:
         path = config.path("data_processed") / f"{args.split}_sequences.npz"
         with np.load(path) as payload:
-            engine_ids = payload["engine_ids"] if "engine_ids" in payload else None
+            engine_ids = payload.get("engine_ids", None)
         X, y = load_sequences(args.split, config)
         return X, y, engine_ids
 

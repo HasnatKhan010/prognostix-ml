@@ -48,14 +48,14 @@ class ValidationReport:
     def warn(self, message: str) -> None:
         self.warnings.append(message)
 
-    def raise_for_errors(self) -> "ValidationReport":
+    def raise_for_errors(self) -> ValidationReport:
         """Raise :class:`ValidationError` if any error was recorded."""
         if self.errors:
             joined = "\n  - ".join(self.errors)
             raise ValidationError(f"Data validation failed:\n  - {joined}")
         return self
 
-    def log(self, logger_: logging.Logger | None = None) -> "ValidationReport":
+    def log(self, logger_: logging.Logger | None = None) -> ValidationReport:
         """Emit warnings and errors through a logger."""
         log = logger_ or logger
         for message in self.warnings:
@@ -98,7 +98,7 @@ def validate_raw_frame(
         report.error(f"Missing columns: {missing_columns}")
         return report  # nothing else can be trusted
 
-    report.stats["n_rows"] = int(len(frame))
+    report.stats["n_rows"] = len(frame)
     report.stats["n_columns"] = int(frame.shape[1])
 
     if frame.empty:

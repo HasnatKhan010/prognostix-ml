@@ -15,7 +15,6 @@ from src.inference.health_score import (
 from src.inference.predictor import ModelRegistry, RULPredictor
 from tests.conftest import WINDOW
 
-
 # --- health scoring -------------------------------------------------------
 
 
@@ -125,7 +124,7 @@ def test_predictor_validates_window_shape(predictor):
 
 
 def test_predictor_builds_windows_from_named_readings(predictor):
-    readings = [{name: 500.0 for name in predictor.feature_columns} for _ in range(WINDOW)]
+    readings = [dict.fromkeys(predictor.feature_columns, 500.0) for _ in range(WINDOW)]
     window = predictor.window_from_readings(readings)
 
     assert window.shape == (WINDOW, 15)
@@ -185,7 +184,7 @@ def test_attention_predictor_explains_its_prediction(config, prepared_dataset):
     from src.models.common import save_checkpoint
     from src.preprocessing.scaling import load_scaler
 
-    X, _ = prepared_dataset["train"]
+    _X, _ = prepared_dataset["train"]
     model = build_model(
         "attention", input_size=15, hidden_size=32, num_layers=1, dropout=0.0, num_heads=4
     )
@@ -210,7 +209,7 @@ def test_attention_predictor_explains_its_prediction(config, prepared_dataset):
 
 
 def test_predictor_reports_a_missing_checkpoint_actionably(config):
-    with pytest.raises(FileNotFoundError, match="scripts/train.py"):
+    with pytest.raises(FileNotFoundError, match=r"scripts/train\.py"):
         RULPredictor(model_name="lstm", config=config)
 
 

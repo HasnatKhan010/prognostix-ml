@@ -25,7 +25,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from src.config import get_config, setup_logging  # noqa: E402
+from src.config import get_config, setup_logging
 
 logger = logging.getLogger("prognostix.download")
 
@@ -163,7 +163,7 @@ def main(argv: list[str] | None = None) -> int:
                 if not missing_files(target):
                     return _verify(target)
                 logger.warning("Archive from %s did not contain the expected files", url)
-            except Exception as exc:  # noqa: BLE001 - try the next mirror
+            except Exception as exc:
                 logger.warning("Mirror failed (%s): %s", url.split("/")[2], exc)
 
     _print_manual_instructions(target)

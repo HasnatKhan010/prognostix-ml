@@ -36,13 +36,17 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from src.config import get_config, set_seed, setup_logging  # noqa: E402
-from src.ingestion.loader import add_rul, load_raw_split, load_rul_truth  # noqa: E402
-from src.ingestion.loader import save_sequences  # noqa: E402
-from src.ingestion.validator import validate_raw_frame, validate_sequences  # noqa: E402
-from src.preprocessing.cleaning import prepare_frame  # noqa: E402
-from src.preprocessing.scaling import apply_scaler, fit_scaler, save_scaler  # noqa: E402
-from src.preprocessing.sequences import (  # noqa: E402
+from src.config import get_config, set_seed, setup_logging
+from src.ingestion.loader import (
+    add_rul,
+    load_raw_split,
+    load_rul_truth,
+    save_sequences,
+)
+from src.ingestion.validator import validate_raw_frame, validate_sequences
+from src.preprocessing.cleaning import prepare_frame
+from src.preprocessing.scaling import apply_scaler, fit_scaler, save_scaler
+from src.preprocessing.sequences import (
     create_sequences,
     split_by_engine,
     split_engines,
@@ -135,9 +139,9 @@ def main(argv: list[str] | None = None) -> int:
         rul_cap=rul_cap,
         metadata={
             "dataset": dataset,
-            "n_train_engines": int(len(train_engines)),
-            "n_val_engines": int(len(val_engines)),
-            "n_test_engines": int(len(test_engines)),
+            "n_train_engines": len(train_engines),
+            "n_val_engines": len(val_engines),
+            "n_test_engines": len(test_engines),
         },
     )
     scaled = {name: apply_scaler(part, bundle) for name, part in splits.items()}
@@ -169,8 +173,8 @@ def main(argv: list[str] | None = None) -> int:
 
         save_sequences(name, X, y, config=config, engine_ids=engine_index)
         summary["splits"][name] = {
-            "n_windows": int(len(X)),
-            "n_engines": int(len(np.unique(engine_index))),
+            "n_windows": len(X),
+            "n_engines": len(np.unique(engine_index)),
             "rul_min": float(y.min()),
             "rul_max": float(y.max()),
             "rul_mean": round(float(y.mean()), 3),

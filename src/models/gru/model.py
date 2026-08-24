@@ -49,7 +49,7 @@ class GRURegressor(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Map ``(batch, window, input_size)`` to ``(batch,)`` RUL estimates."""
-        output, hidden = self.gru(x)
+        output, _hidden = self.gru(x)
 
         last_output = output[:, -1, :]
 

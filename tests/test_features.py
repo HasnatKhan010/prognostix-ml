@@ -9,7 +9,6 @@ another through a rolling or lag window.
 from __future__ import annotations
 
 import numpy as np
-import pandas as pd
 import pytest
 
 from src.features.engineering import (
@@ -21,7 +20,6 @@ from src.features.engineering import (
 )
 from src.features.lag_features import add_diff_features, add_lag_features
 from src.features.rolling_features import add_expanding_features, add_rolling_features
-
 
 # --- window statistics ----------------------------------------------------
 

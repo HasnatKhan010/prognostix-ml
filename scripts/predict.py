@@ -25,10 +25,10 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from src.config import get_config, setup_logging  # noqa: E402
-from src.ingestion.loader import load_processed, load_sequences  # noqa: E402
-from src.inference.health_score import assess_health  # noqa: E402
-from src.inference.predictor import RULPredictor  # noqa: E402
+from src.config import get_config, setup_logging
+from src.inference.health_score import assess_health
+from src.inference.predictor import RULPredictor
+from src.ingestion.loader import load_processed, load_sequences
 
 logger = logging.getLogger("prognostix.predict")
 
@@ -138,7 +138,7 @@ def _predict_split(predictor: RULPredictor, split: str, config) -> pd.DataFrame:
     X, y = load_sequences(split, config)
     path = config.path("data_processed") / f"{split}_sequences.npz"
     with np.load(path) as payload:
-        engine_ids = payload["engine_ids"] if "engine_ids" in payload else None
+        engine_ids = payload.get("engine_ids", None)
 
     predictions = predictor.predict(X, scaled=True)
     assessments = [
@@ -181,7 +181,7 @@ def _print_report(ranked: pd.DataFrame, top: int, model: str) -> None:
 
     for _, row in ranked.head(top).iterrows():
         line = (
-            f"{str(row.get('engine_id', '-')):>8}{row['rul']:>10.1f}"
+            f"{row.get('engine_id', '-')!s:>8}{row['rul']:>10.1f}"
             f"{row['health_score']:>9.1f}  {row['risk_level']:<10}"
         )
         if has_truth and pd.notna(row.get("actual_rul")):

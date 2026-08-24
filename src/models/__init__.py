@@ -27,12 +27,12 @@ SKLEARN_MODELS: tuple[str, ...] = ("linear", "random_forest", "mean")
 MODEL_NAMES: tuple[str, ...] = (*SKLEARN_MODELS, *TORCH_MODELS)
 
 __all__ = [
-    "AttentionRegressor",
-    "GRURegressor",
-    "LSTMRegressor",
     "MODEL_NAMES",
     "SKLEARN_MODELS",
     "TORCH_MODELS",
+    "AttentionRegressor",
+    "GRURegressor",
+    "LSTMRegressor",
     "build_model",
     "is_torch_model",
 ]

@@ -10,11 +10,12 @@ from __future__ import annotations
 
 import json
 import logging
-from dataclasses import dataclass, field, asdict
+from collections.abc import Iterable
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 from src.config import Config, get_config
 
@@ -154,7 +155,7 @@ class AlertManager:
                 logger.warning(
                     "Webhook returned %s: %s", response.status_code, response.text[:200]
                 )
-        except Exception as exc:  # noqa: BLE001 - never propagate sink failures
+        except Exception as exc:
             logger.warning("Webhook delivery failed: %s", exc)
 
     def history(self, limit: int | None = None) -> list[dict[str, Any]]:

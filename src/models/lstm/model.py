@@ -63,7 +63,7 @@ class LSTMRegressor(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Map ``(batch, window, input_size)`` to ``(batch,)`` RUL estimates."""
-        output, (hidden, cell) = self.lstm(x)
+        output, (_hidden, _cell) = self.lstm(x)
 
         # Representation from the final timestep.
         last_output = output[:, -1, :]

@@ -20,9 +20,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from src.config import get_config, setup_logging  # noqa: E402
-from src.evaluation.compare import load_leaderboard  # noqa: E402
-from src.models import SKLEARN_MODELS, TORCH_MODELS  # noqa: E402
+from src.config import get_config, setup_logging
+from src.evaluation.compare import load_leaderboard
+from src.models import SKLEARN_MODELS, TORCH_MODELS
 
 logger = logging.getLogger("prognostix.train")
 

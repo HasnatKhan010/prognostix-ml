@@ -118,7 +118,7 @@ def test_predict_from_named_readings(api_client, predictor):
     """Callers may send full sensor dictionaries; the model picks its columns."""
     columns = predictor.feature_columns
     readings = [
-        {name: 500.0 + index * 0.1 for name in columns} for index in range(WINDOW)
+        dict.fromkeys(columns, 500.0 + index * 0.1) for index in range(WINDOW)
     ]
     response = api_client.post(
         f"{PREFIX}/predict", json={"engine_id": "pump-3", "readings": readings}
@@ -130,7 +130,7 @@ def test_predict_from_named_readings(api_client, predictor):
 
 def test_predict_readings_may_carry_extra_sensors(api_client, predictor):
     readings = [
-        {**{name: 500.0 for name in predictor.feature_columns}, "sensor_99": 1.0}
+        {**dict.fromkeys(predictor.feature_columns, 500.0), "sensor_99": 1.0}
         for _ in range(WINDOW)
     ]
     assert api_client.post(f"{PREFIX}/predict", json={"readings": readings}).status_code == 200
@@ -241,7 +241,7 @@ def test_batch_predict_returns_a_row_per_item(api_client):
 
 
 def test_batch_predict_mixes_input_forms(api_client, predictor):
-    readings = [{name: 500.0 for name in predictor.feature_columns} for _ in range(WINDOW)]
+    readings = [dict.fromkeys(predictor.feature_columns, 500.0) for _ in range(WINDOW)]
     response = api_client.post(
         f"{PREFIX}/predict/batch",
         json={

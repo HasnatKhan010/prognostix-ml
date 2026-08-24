@@ -10,7 +10,7 @@ order below must not change or those artifacts stop matching their inputs.
 from __future__ import annotations
 
 import logging
-from typing import Callable, Sequence
+from collections.abc import Callable, Sequence
 
 import numpy as np
 import pandas as pd
