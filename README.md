@@ -1,14 +1,3 @@
----
-title: Prognostix ML
-emoji: ⚙️
-colorFrom: blue
-colorTo: gray
-sdk: docker
-app_port: 7860
-pinned: false
-license: mit
-short_description: Remaining useful life prediction for industrial equipment
----
 
 # Prognostix ML
 
